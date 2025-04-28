@@ -4,7 +4,7 @@ import { DrawIoEmbedRef } from 'react-drawio';
 import { MockupSaveDialog } from '../components/MockupSaveDialog';
 import { ErrorMessage } from '../components/ErrorMessage';
 import { useDiagramManager } from '../hooks/useDiagramManager';
-import { createEmptyMockup } from '../utils/mockupUtils';
+import { createEmptyMockup } from '../utils';
 
 export const NewMockupPage = () => {
   const navigate = useNavigate();

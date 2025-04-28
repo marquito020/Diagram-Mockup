@@ -41,5 +41,8 @@ export {
 // Mockup Converter exports
 export { convertToMockup } from "./mockupConverter";
 
+// Mockup Utils exports
+export { createEmptyMockup } from "./mockupUtils";
+
 // Additional exports
 export * from "./diagramUtils";
