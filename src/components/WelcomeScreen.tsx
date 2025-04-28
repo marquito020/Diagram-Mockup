@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FolderPlus, File, Upload, Clock, Plus, ListTodo } from 'lucide-react';
+import { FolderPlus, File, Upload, Clock, Plus, ListTodo, Layers } from 'lucide-react';
 import { authApi, diagramasApi, mockupsApi } from '../services/apiService';
 import { Diagrama, Mockup, User } from '../types/api';
 import { UserProfile } from './UserProfile';
@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 
 interface WelcomeScreenProps {
   onCreateNew: () => void;
+  onCreateNewMockup: () => void;
   onOpenExisting: () => void;
   onFileImport: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onLogout: () => void;
@@ -15,6 +16,7 @@ interface WelcomeScreenProps {
 
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   onCreateNew,
+  onCreateNewMockup,
   onOpenExisting,
   onFileImport,
   onLogout,
@@ -29,6 +31,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 
   // Estos métodos ahora usan navigate en lugar de window.location
   const handleCreateNew = () => navigate('/new-diagram');
+  const handleCreateNewMockup = () => navigate('/new-mockup');
   const handleOpenExisting = () => navigate('/diagrams');
   const handleShowTodoApp = () => navigate('/todos');
   const handleLogout = () => {
@@ -138,6 +141,19 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             <div className="text-left">
               <h3 className="font-semibold text-gray-800">Nuevo diagrama</h3>
               <p className="text-sm text-gray-500">Crear un nuevo diagrama en blanco</p>
+            </div>
+          </button>
+
+          <button
+            onClick={handleCreateNewMockup}
+            className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow flex items-center gap-4"
+          >
+            <div className="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center text-green-600">
+              <Layers size={24} />
+            </div>
+            <div className="text-left">
+              <h3 className="font-semibold text-gray-800">Nuevo mockup</h3>
+              <p className="text-sm text-gray-500">Crear un nuevo mockup en blanco</p>
             </div>
           </button>
 
@@ -280,7 +296,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                     <File className="h-12 w-12 mx-auto text-gray-300" />
                     <p className="mt-2 text-gray-500">No hay mockups recientes</p>
                     <button
-                      onClick={handleCreateNew}
+                      onClick={handleCreateNewMockup}
                       className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition"
                     >
                       Crear nuevo mockup

@@ -365,7 +365,11 @@ export function useDiagramManager(
 
   // Handle mockup save dialog confirmation
   const handleMockupSaveConfirm = async (): Promise<string | null> => {
-    if (!mockupXmlContent) {
+    // Usar el contenido actual si no hay mockupXmlContent específico
+    // Este es el caso cuando se crea un nuevo mockup desde la página NewMockupPage
+    const contentToSave = mockupXmlContent || xmlContent;
+    
+    if (!contentToSave) {
       setError("No hay contenido de mockup para guardar");
       return null;
     }
@@ -383,7 +387,7 @@ export function useDiagramManager(
       }
 
       // Save mockup to localStorage
-      const saveResult = saveToLocalStorage(filename, mockupXmlContent);
+      const saveResult = saveToLocalStorage(filename, contentToSave);
 
       if (saveResult) {
         try {
@@ -391,7 +395,7 @@ export function useDiagramManager(
           const nameWithoutExt = filename.replace(/\.drawio\.xml$/, "");
           const apiResponse = await mockupsApi.create({
             nombre: nameWithoutExt,
-            xml: mockupXmlContent,
+            xml: contentToSave,
           });
           
           console.log("Mockup guardado en API:", apiResponse);
@@ -402,7 +406,7 @@ export function useDiagramManager(
         }
 
         // Update UI with new mockup diagram
-        setXmlContent(mockupXmlContent);
+        setXmlContent(contentToSave);
         setFileName(filename);
         setCurrentFile(filename);
 

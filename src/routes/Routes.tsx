@@ -1,7 +1,7 @@
 import { Route, Routes as RouterRoutes, Navigate, useNavigate } from 'react-router-dom';
 import { AuthPage } from '../components/AuthPage';
 import { WelcomeScreen } from '../components/WelcomeScreen';
-import { DiagramsPage, NewDiagramPage, TodoPage } from '../pages';
+import { DiagramsPage, NewDiagramPage, TodoPage, NewMockupPage } from '../pages';
 import { useCallback } from 'react';
 import { authApi } from '../services/apiService';
 
@@ -28,6 +28,10 @@ export const Routes = () => {
     navigate('/new-diagram');
   }, [navigate]);
   
+  const handleCreateNewMockup = useCallback(() => {
+    navigate('/new-mockup');
+  }, [navigate]);
+  
   const handleOpenExisting = useCallback(() => {
     navigate('/diagrams');
   }, [navigate]);
@@ -50,7 +54,8 @@ export const Routes = () => {
       <Route path="/" element={
         <ProtectedRoute>
           <WelcomeScreen 
-            onCreateNew={handleCreateNew} 
+            onCreateNew={handleCreateNew}
+            onCreateNewMockup={handleCreateNewMockup}
             onOpenExisting={handleOpenExisting} 
             onShowTodoApp={handleShowTodoApp} 
             onFileImport={(e) => console.log('File import', e)} 
@@ -74,6 +79,12 @@ export const Routes = () => {
       <Route path="/new-diagram" element={
         <ProtectedRoute>
           <NewDiagramPage />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/new-mockup" element={
+        <ProtectedRoute>
+          <NewMockupPage />
         </ProtectedRoute>
       } />
       
