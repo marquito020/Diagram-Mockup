@@ -9,7 +9,9 @@ import {
   Menu,
   Layout,
   List,
-  Upload
+  Upload,
+  LogOut,
+  Home
 } from 'lucide-react';
 
 interface DiagramHeaderProps {
@@ -25,6 +27,8 @@ interface DiagramHeaderProps {
   onDownload: () => void;
   onExportXml: () => void;
   onCreateNew: () => void;
+  onLogout: () => void;
+  onGoHome: () => void;
 }
 
 export const DiagramHeader: React.FC<DiagramHeaderProps> = ({
@@ -39,7 +43,9 @@ export const DiagramHeader: React.FC<DiagramHeaderProps> = ({
   onConvertToMockup,
   onDownload,
   onExportXml,
-  onCreateNew
+  onCreateNew,
+  onLogout,
+  onGoHome
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -66,6 +72,15 @@ export const DiagramHeader: React.FC<DiagramHeaderProps> = ({
           isExpanded ? 'w-64' : 'w-16'
         }`}
       >
+        <button
+          className={`flex items-center ${isExpanded ? 'justify-start' : 'justify-center'} gap-3 py-2 px-3 rounded-md hover:bg-indigo-700 transition-colors duration-200`}
+          onClick={onGoHome}
+          title="Ir a inicio"
+        >
+          <Home size={20} />
+          {isExpanded && <span className="font-medium">Ir a inicio</span>}
+        </button>
+
         <button
           className={`flex items-center ${isExpanded ? 'justify-start' : 'justify-center'} gap-3 py-2 px-3 rounded-md hover:bg-indigo-700 transition-colors duration-200`}
           onClick={onToggleFileSelector}
@@ -170,6 +185,19 @@ export const DiagramHeader: React.FC<DiagramHeaderProps> = ({
         >
           <FilePlus size={20} />
           {isExpanded && <span className="font-medium">Nuevo diagrama</span>}
+        </button>
+
+        {/* Spacer to push logout to the bottom */}
+        <div className="flex-grow"></div>
+
+        {/* Logout button at the bottom */}
+        <button
+          className={`flex items-center ${isExpanded ? 'justify-start' : 'justify-center'} gap-3 py-2 px-3 rounded-md hover:bg-red-700 transition-colors duration-200 text-white mt-auto`}
+          onClick={onLogout}
+          title="Cerrar sesión"
+        >
+          <LogOut size={20} />
+          {isExpanded && <span className="font-medium">Cerrar sesión</span>}
         </button>
       </div>
     </div>

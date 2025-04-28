@@ -1,51 +1,279 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { FolderPlus, File, Upload, Clock, Plus, ListTodo } from 'lucide-react';
+import { authApi, diagramasApi, mockupsApi } from '../services/apiService';
+import { Diagrama, Mockup, User } from '../types/api';
+import { UserProfile } from './UserProfile';
+import { useNavigate } from 'react-router-dom';
 
 interface WelcomeScreenProps {
   onCreateNew: () => void;
   onOpenExisting: () => void;
-  onFileImport: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onFileImport: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onLogout: () => void;
+  onShowTodoApp: () => void;
 }
 
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   onCreateNew,
   onOpenExisting,
-  onFileImport
+  onFileImport,
+  onLogout,
+  onShowTodoApp
 }) => {
+  const navigate = useNavigate();
+  const [recentDiagrams, setRecentDiagrams] = useState<Diagrama[]>([]);
+  const [recentMockups, setRecentMockups] = useState<Mockup[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
+  const [activeTab, setActiveTab] = useState<'diagrams' | 'mockups'>('diagrams');
+
+  // These new methods use navigate instead of window.location
+  const handleCreateNew = () => navigate('/new-diagram');
+  const handleOpenExisting = () => navigate('/diagrams');
+  const handleShowTodoApp = () => navigate('/todos');
+  const handleLogout = () => {
+    authApi.logout();
+    navigate('/login');
+  };
+
+  useEffect(() => {
+    // Get current user
+    try {
+      const currentUser = authApi.getCurrentUser();
+      if (currentUser) {
+        setUser(currentUser);
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+    }
+
+    // Load diagrams from API only if authenticated
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        if (!authApi.isAuthenticated()) {
+          return;
+        }
+        
+        try {
+          // Load diagrams
+          const diagrams = await diagramasApi.getAll();
+          setRecentDiagrams(diagrams.slice(0, 10)); // Show only the 10 most recent
+        } catch (error: any) {
+          console.error('Error loading diagrams:', error);
+          if (error.response?.status === 401) {
+            // Invalid token, logout
+            authApi.logout();
+            navigate('/login');
+          }
+        }
+
+        try {
+          // Load mockups
+          const mockups = await mockupsApi.getAll();
+          setRecentMockups(mockups.slice(0, 10)); // Show only the 10 most recent
+        } catch (error: any) {
+          console.error('Error loading mockups:', error);
+        }
+      } catch (error) {
+        console.error('Error loading data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [navigate]);
+
+  // Format date for display
+  const formatDate = (dateString: Date) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString(undefined, { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  // Get user name for display
+  const userName = user?.nombre || "Invitado";
+
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gray-50">
-      <div className="text-center max-w-md px-4">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4">Diagramas UML</h1>
-        <p className="text-gray-600 mb-8">
-          Bienvenido a la herramienta de diagramación UML. Crea un nuevo diagrama, abre uno existente o importa desde archivo para comenzar.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
-          <button
-            onClick={onCreateNew}
-            className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md shadow-md hover:shadow-lg transition-all duration-300"
-          >
-            Crear nuevo diagrama
-          </button>
-          <button
-            onClick={onOpenExisting}
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-md hover:shadow-lg transition-all duration-300"
-          >
-            Abrir diagrama existente
-          </button>
+    <div className="h-full flex flex-col bg-gray-50">
+      {/* Header with user profile */}
+      <header className="bg-white shadow-sm p-4 flex justify-between items-center">
+        <h1 className="text-xl font-semibold text-gray-800">Diagram Maker</h1>
+        <UserProfile onLogout={handleLogout} />
+      </header>
+
+      <main className="flex-grow flex flex-col p-6 max-w-6xl mx-auto w-full">
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Bienvenido, {userName}!</h2>
+          <p className="text-gray-600">
+            Comienza a diseñar tus diagramas y mockups ahora mismo
+          </p>
         </div>
 
-        <div className="border-t border-gray-200 pt-6">
-          <p className="text-gray-700 mb-4 font-medium">¿Ya tienes un diagrama en tu dispositivo?</p>
-          <label className="cursor-pointer inline-flex items-center justify-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-md shadow-md hover:shadow-lg transition-all duration-300">
-            <span>Importar desde archivo</span>
+        {/* Quick action buttons */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <button
+            onClick={handleCreateNew}
+            className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow flex items-center gap-4"
+          >
+            <div className="h-10 w-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600">
+              <Plus size={24} />
+            </div>
+            <div className="text-left">
+              <h3 className="font-semibold text-gray-800">Nuevo diagrama</h3>
+              <p className="text-sm text-gray-500">Crear un nuevo diagrama en blanco</p>
+            </div>
+          </button>
+
+          <button
+            onClick={handleOpenExisting}
+            className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow flex items-center gap-4"
+          >
+            <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
+              <FolderPlus size={24} />
+            </div>
+            <div className="text-left">
+              <h3 className="font-semibold text-gray-800">Abrir existente</h3>
+              <p className="text-sm text-gray-500">Abrir un diagrama guardado</p>
+            </div>
+          </button>
+
+          <button
+            onClick={handleShowTodoApp}
+            className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow flex items-center gap-4"
+          >
+            <div className="h-10 w-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-600">
+              <ListTodo size={24} />
+            </div>
+            <div className="text-left">
+              <h3 className="font-semibold text-gray-800">Todo App</h3>
+              <p className="text-sm text-gray-500">Gestiona tus tareas pendientes</p>
+            </div>
+          </button>
+
+          <label className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow flex items-center gap-4 cursor-pointer">
+            <div className="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center text-green-600">
+              <Upload size={24} />
+            </div>
+            <div className="text-left">
+              <h3 className="font-semibold text-gray-800">Importar archivo</h3>
+              <p className="text-sm text-gray-500">Subir un archivo de diagrama</p>
+            </div>
             <input
               type="file"
-              accept=".xml,.drawio,.drawio.xml"
               className="hidden"
+              accept=".xml,.drawio,.drawio.xml"
               onChange={onFileImport}
             />
           </label>
         </div>
-      </div>
+
+        {/* Recent items */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          {/* Tabs */}
+          <div className="flex border-b border-gray-200">
+            <button
+              className={`px-6 py-3 text-sm font-medium ${
+                activeTab === 'diagrams'
+                  ? 'border-b-2 border-indigo-500 text-indigo-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+              onClick={() => setActiveTab('diagrams')}
+            >
+              Diagramas recientes
+            </button>
+            <button
+              className={`px-6 py-3 text-sm font-medium ${
+                activeTab === 'mockups'
+                  ? 'border-b-2 border-indigo-500 text-indigo-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+              onClick={() => setActiveTab('mockups')}
+            >
+              Mockups recientes
+            </button>
+          </div>
+
+          {/* Tab content */}
+          <div className="p-4">
+            {loading ? (
+              <div className="text-center py-10">
+                <svg className="animate-spin h-8 w-8 mx-auto text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p className="mt-2 text-gray-500">Cargando...</p>
+              </div>
+            ) : activeTab === 'diagrams' ? (
+              <>
+                {recentDiagrams.length > 0 ? (
+                  <ul className="divide-y divide-gray-200">
+                    {recentDiagrams.map((diagram) => (
+                      <li key={diagram.id} className="py-3 flex justify-between items-center hover:bg-gray-50 px-4 rounded">
+                        <div className="flex items-center">
+                          <File className="h-5 w-5 text-indigo-500 mr-3" />
+                          <span className="text-gray-800">{diagram.nombre}</span>
+                        </div>
+                        <div className="flex items-center text-sm text-gray-500">
+                          <Clock className="h-4 w-4 mr-1" />
+                          <span>{formatDate(diagram.updatedAt)}</span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="text-center py-10">
+                    <File className="h-12 w-12 mx-auto text-gray-300" />
+                    <p className="mt-2 text-gray-500">No hay diagramas recientes</p>
+                    <button
+                      onClick={handleCreateNew}
+                      className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition"
+                    >
+                      Crear nuevo diagrama
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                {recentMockups.length > 0 ? (
+                  <ul className="divide-y divide-gray-200">
+                    {recentMockups.map((mockup) => (
+                      <li key={mockup.id} className="py-3 flex justify-between items-center hover:bg-gray-50 px-4 rounded">
+                        <div className="flex items-center">
+                          <File className="h-5 w-5 text-green-500 mr-3" />
+                          <span className="text-gray-800">{mockup.nombre}</span>
+                        </div>
+                        <div className="flex items-center text-sm text-gray-500">
+                          <Clock className="h-4 w-4 mr-1" />
+                          <span>{formatDate(mockup.updatedAt)}</span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="text-center py-10">
+                    <File className="h-12 w-12 mx-auto text-gray-300" />
+                    <p className="mt-2 text-gray-500">No hay mockups recientes</p>
+                    <button
+                      onClick={handleCreateNew}
+                      className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition"
+                    >
+                      Crear nuevo mockup
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      </main>
     </div>
   );
 };

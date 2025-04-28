@@ -6,12 +6,14 @@ interface ClassViewProps {
   classes: ClassInfo[];
   onBackToDiagram: () => void;
   onDownload: () => void;
+  onGoHome: () => void;
 }
 
 export const ClassView: React.FC<ClassViewProps> = ({
   classes,
   onBackToDiagram,
-  onDownload
+  onDownload,
+  onGoHome
 }) => {
   return (
     <div className="max-w-7xl mx-auto p-6">
@@ -29,6 +31,12 @@ export const ClassView: React.FC<ClassViewProps> = ({
             onClick={onDownload}
           >
             Descargar Diagrama
+          </button>
+          <button
+            className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md shadow-lg hover:shadow-xl transition-all duration-300"
+            onClick={onGoHome}
+          >
+            Ir a Inicio
           </button>
         </div>
       </div>

@@ -3,6 +3,7 @@ import {
   // File Manager
   loadFilesFromLocalStorage,
   saveToLocalStorage,
+  loadFromLocalStorage,
   updateAvailableFilesList,
   renameFile,
   deleteFile,
@@ -29,6 +30,7 @@ import {
 import { ClassInfo } from "../types/diagram";
 import { downloadFile, listAssetsFiles } from "../services/fileService";
 import { DrawIoEmbedRef } from "react-drawio";
+import { diagramasApi, mockupsApi } from "../services/apiService";
 
 // Define the DrawioAutoSaveEvent interface
 interface DrawioAutoSaveEvent {
@@ -176,20 +178,92 @@ export function useDiagramManager(
 
   // Handle save dialog confirmation
   const handleSaveAsConfirm = async () => {
-    saveAsConfirm(
-      newFileName,
-      xmlContent,
-      files,
-      setError,
-      setLoadingSave,
-      setFiles,
-      setFileName,
-      setCurrentFile,
-      setXmlContent,
-      refreshAvailableFiles,
-      setShowSaveDialog,
-      setNewFileName
-    );
+    if (!newFileName || newFileName.trim() === "") {
+      setError("Error: Debe ingresar un nombre para el archivo");
+      return;
+    }
+
+    setLoadingSave(true);
+
+    try {
+      // Ensure the filename has the correct extension
+      let filename = newFileName;
+      if (!filename.endsWith(".drawio.xml")) {
+        filename = filename.endsWith(".xml")
+          ? filename.replace(".xml", ".drawio.xml")
+          : `${filename}.drawio.xml`;
+      }
+
+      // Check if the file already exists
+      const localStorageExists = !!loadFromLocalStorage(filename);
+
+      if (localStorageExists) {
+        console.log(`El archivo ${filename} ya existe, se sobreescribirá`);
+      }
+
+      // Use an empty diagram if we don't have content
+      const contentToSave = !xmlContent
+        ? `
+          <mxfile host="app.diagrams.net" modified="${new Date().toISOString()}" agent="Diagram Maker">
+            <diagram id="diagram-1" name="Página-1">
+              <mxGraphModel dx="1422" dy="798" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169">
+                <root>
+                  <mxCell id="0" />
+                  <mxCell id="1" parent="0" />
+                </root>
+              </mxGraphModel>
+            </diagram>
+          </mxfile>
+        `
+        : xmlContent;
+
+      console.log(`Guardando/sobreescribiendo "${filename}" en localStorage y API...`);
+
+      // Save to localStorage for offline access
+      const saveResult = saveToLocalStorage(filename, contentToSave);
+
+      if (saveResult) {
+        try {
+          // Also save to the API
+          const nameWithoutExt = filename.replace(/\.drawio\.xml$/, "");
+          const apiResponse = await diagramasApi.create({
+            nombre: nameWithoutExt,
+            xml: contentToSave,
+          });
+          
+          console.log("Diagrama guardado en API:", apiResponse);
+        } catch (apiError) {
+          console.error("Error guardando en API, pero guardado localmente:", apiError);
+        }
+
+        console.log(`Diagrama guardado como ${filename} en localStorage`);
+
+        // Add to files list if not already there
+        if (!files.includes(filename)) {
+          const updatedFiles = [...files, filename];
+          setFiles(updatedFiles);
+        }
+
+        // Update state
+        setFileName(filename);
+        setCurrentFile(filename);
+        setXmlContent(contentToSave);
+
+        // Update file list
+        refreshAvailableFiles();
+
+        setShowSaveDialog(false);
+        setNewFileName("");
+      } else {
+        console.error(`Error al guardar el diagrama: ${filename}`);
+        setError("Error al crear el diagrama");
+      }
+    } catch (error) {
+      console.error("Error en la operación Guardar Como:", error);
+      setError("Error al crear el diagrama: " + (error as Error).message);
+    } finally {
+      setLoadingSave(false);
+    }
   };
 
   // Download the current diagram as a file
@@ -306,6 +380,19 @@ export function useDiagramManager(
       const saveResult = saveToLocalStorage(filename, mockupXmlContent);
 
       if (saveResult) {
+        try {
+          // Also save to the API
+          const nameWithoutExt = filename.replace(/\.drawio\.xml$/, "");
+          const apiResponse = await mockupsApi.create({
+            nombre: nameWithoutExt,
+            xml: mockupXmlContent,
+          });
+          
+          console.log("Mockup guardado en API:", apiResponse);
+        } catch (apiError) {
+          console.error("Error guardando mockup en API, pero guardado localmente:", apiError);
+        }
+
         // Update UI with new mockup diagram
         setXmlContent(mockupXmlContent);
         setFileName(filename);
@@ -430,6 +517,19 @@ export function useDiagramManager(
       const saveResult = saveToLocalStorage(filename, xmlContent);
 
       if (saveResult) {
+        // Also save to the API
+        try {
+          const nameWithoutExt = filename.replace(/\.drawio\.xml$/, "");
+          mockupsApi.create({
+            nombre: nameWithoutExt,
+            xml: xmlContent,
+          }).then(response => {
+            console.log("Mockup de imagen guardado en API:", response);
+          });
+        } catch (apiError) {
+          console.error("Error guardando mockup de imagen en API, pero guardado localmente:", apiError);
+        }
+
         // Update UI with new mockup
         setXmlContent(xmlContent);
         setFileName(filename);
