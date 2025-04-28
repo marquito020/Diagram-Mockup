@@ -101,12 +101,12 @@ export const createEmptyMockup = (): string => {
           </mxGeometry>
         </mxCell>
         
-        <mxCell id="btn-edit-1" value="Editar" style="rounded=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;align=center;verticalAlign=middle;fontStyle=0;fontSize=10;spacingLeft=0;spacingRight=0;spacingTop=0;spacingBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="578" y="206" width="50" height="20" as="geometry" />
+        <mxCell id="btn-edit-1" value="Editar" style="rounded=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;align=center;verticalAlign=middle;fontStyle=0;fontSize=10;spacingLeft=0;spacingRight=0;spacingTop=0;spacingBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="cell-id-actions">
+          <mxGeometry x="32" y="10" width="50" height="20" as="geometry" />
         </mxCell>
         
-        <mxCell id="btn-delete-1" value="Eliminar" style="rounded=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#333333;align=center;verticalAlign=middle;fontStyle=0;fontSize=10;spacingLeft=0;spacingRight=0;spacingTop=0;spacingBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="638" y="206" width="50" height="20" as="geometry" />
+        <mxCell id="btn-delete-1" value="Eliminar" style="rounded=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#333333;align=center;verticalAlign=middle;fontStyle=0;fontSize=10;spacingLeft=0;spacingRight=0;spacingTop=0;spacingBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="cell-id-actions">
+          <mxGeometry x="92" y="10" width="50" height="20" as="geometry" />
         </mxCell>
         
         <!-- Fila 2: nombre -->
@@ -138,12 +138,12 @@ export const createEmptyMockup = (): string => {
           </mxGeometry>
         </mxCell>
         
-        <mxCell id="btn-edit-2" value="Editar" style="rounded=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;align=center;verticalAlign=middle;fontStyle=0;fontSize=10;spacingLeft=0;spacingRight=0;spacingTop=0;spacingBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="578" y="246" width="50" height="20" as="geometry" />
+        <mxCell id="btn-edit-2" value="Editar" style="rounded=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;align=center;verticalAlign=middle;fontStyle=0;fontSize=10;spacingLeft=0;spacingRight=0;spacingTop=0;spacingBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="cell-nombre-actions">
+          <mxGeometry x="32" y="10" width="50" height="20" as="geometry" />
         </mxCell>
         
-        <mxCell id="btn-delete-2" value="Eliminar" style="rounded=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#333333;align=center;verticalAlign=middle;fontStyle=0;fontSize=10;spacingLeft=0;spacingRight=0;spacingTop=0;spacingBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="638" y="246" width="50" height="20" as="geometry" />
+        <mxCell id="btn-delete-2" value="Eliminar" style="rounded=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#333333;align=center;verticalAlign=middle;fontStyle=0;fontSize=10;spacingLeft=0;spacingRight=0;spacingTop=0;spacingBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="cell-nombre-actions">
+          <mxGeometry x="92" y="10" width="50" height="20" as="geometry" />
         </mxCell>
         
         <!-- Fila 3: activo -->
@@ -175,12 +175,12 @@ export const createEmptyMockup = (): string => {
           </mxGeometry>
         </mxCell>
         
-        <mxCell id="btn-edit-3" value="Editar" style="rounded=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;align=center;verticalAlign=middle;fontStyle=0;fontSize=10;spacingLeft=0;spacingRight=0;spacingTop=0;spacingBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="578" y="286" width="50" height="20" as="geometry" />
+        <mxCell id="btn-edit-3" value="Editar" style="rounded=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;align=center;verticalAlign=middle;fontStyle=0;fontSize=10;spacingLeft=0;spacingRight=0;spacingTop=0;spacingBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="cell-activo-actions">
+          <mxGeometry x="32" y="10" width="50" height="20" as="geometry" />
         </mxCell>
         
-        <mxCell id="btn-delete-3" value="Eliminar" style="rounded=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#333333;align=center;verticalAlign=middle;fontStyle=0;fontSize=10;spacingLeft=0;spacingRight=0;spacingTop=0;spacingBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="638" y="286" width="50" height="20" as="geometry" />
+        <mxCell id="btn-delete-3" value="Eliminar" style="rounded=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#333333;align=center;verticalAlign=middle;fontStyle=0;fontSize=10;spacingLeft=0;spacingRight=0;spacingTop=0;spacingBottom=0;whiteSpace=wrap;html=1;" vertex="1" parent="cell-activo-actions">
+          <mxGeometry x="92" y="10" width="50" height="20" as="geometry" />
         </mxCell>
         
         <!-- Botón Guardar Tabla -->
