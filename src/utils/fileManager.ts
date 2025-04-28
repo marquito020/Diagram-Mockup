@@ -43,6 +43,8 @@ export const saveFilesListToLocalStorage = (filesList: string[]): void => {
     // Filter out the problematic 'diagrams' entry
     const validFiles = filesList.filter((file) => file !== "diagrams");
     localStorage.setItem("drawioFiles", JSON.stringify(validFiles));
+
+    console.log("Files list saved to localStorage:", validFiles);
   } catch (error) {
     console.error("Error saving file list to localStorage:", error);
   }

@@ -30,8 +30,14 @@ export const NewDiagramPage = () => {
   // Handle save confirmation with redirect
   const handleSaveWithRedirect = async () => {
     try {
-      await handleSaveAsConfirm();
-      navigate('/diagrams');
+      const createdId = await handleSaveAsConfirm();
+      if (createdId) {
+        // Si tenemos un ID, redirigir a la página de edición
+        navigate(`/edit/diagram/${createdId}`);
+      } else {
+        // Si no tenemos ID (error o no se pudo guardar en API), ir a la lista de diagramas
+        navigate('/diagrams');
+      }
     } catch (error) {
       console.error('Error saving diagram:', error);
     }

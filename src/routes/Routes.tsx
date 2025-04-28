@@ -77,6 +77,13 @@ export const Routes = () => {
         </ProtectedRoute>
       } />
       
+      {/* Nueva ruta para editar diagramas */}
+      <Route path="/edit/:type/:id" element={
+        <ProtectedRoute>
+          <DiagramsPage />
+        </ProtectedRoute>
+      } />
+      
       {/* Catch-all route - redirect to home */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </RouterRoutes>

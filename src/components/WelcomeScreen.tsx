@@ -27,13 +27,23 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   const [user, setUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState<'diagrams' | 'mockups'>('diagrams');
 
-  // These new methods use navigate instead of window.location
+  // Estos métodos ahora usan navigate en lugar de window.location
   const handleCreateNew = () => navigate('/new-diagram');
   const handleOpenExisting = () => navigate('/diagrams');
   const handleShowTodoApp = () => navigate('/todos');
   const handleLogout = () => {
     authApi.logout();
     navigate('/login');
+  };
+
+  // Función para abrir un diagrama específico
+  const handleOpenDiagram = (diagramId: string) => {
+    navigate(`/edit/diagram/${diagramId}`);
+  };
+
+  // Función para abrir un mockup específico
+  const handleOpenMockup = (mockupId: string) => {
+    navigate(`/edit/mockup/${mockupId}`);
   };
 
   useEffect(() => {
@@ -215,7 +225,11 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                 {recentDiagrams.length > 0 ? (
                   <ul className="divide-y divide-gray-200">
                     {recentDiagrams.map((diagram) => (
-                      <li key={diagram.id} className="py-3 flex justify-between items-center hover:bg-gray-50 px-4 rounded">
+                      <li 
+                        key={diagram.id} 
+                        className="py-3 flex justify-between items-center hover:bg-gray-50 px-4 rounded cursor-pointer"
+                        onClick={() => handleOpenDiagram(diagram.id)}
+                      >
                         <div className="flex items-center">
                           <File className="h-5 w-5 text-indigo-500 mr-3" />
                           <span className="text-gray-800">{diagram.nombre}</span>
@@ -245,7 +259,11 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
                 {recentMockups.length > 0 ? (
                   <ul className="divide-y divide-gray-200">
                     {recentMockups.map((mockup) => (
-                      <li key={mockup.id} className="py-3 flex justify-between items-center hover:bg-gray-50 px-4 rounded">
+                      <li 
+                        key={mockup.id} 
+                        className="py-3 flex justify-between items-center hover:bg-gray-50 px-4 rounded cursor-pointer"
+                        onClick={() => handleOpenMockup(mockup.id)}
+                      >
                         <div className="flex items-center">
                           <File className="h-5 w-5 text-green-500 mr-3" />
                           <span className="text-gray-800">{mockup.nombre}</span>

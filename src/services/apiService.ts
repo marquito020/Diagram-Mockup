@@ -225,7 +225,20 @@ export const mockupsApi = {
   // Create new mockup
   create: async (mockup: { nombre: string; xml: string }): Promise<Mockup> => {
     try {
-      const response = await api.post<Mockup>("/mockups", mockup);
+      // Get current user from localStorage
+      const user = authApi.getCurrentUser();
+
+      if (!user || !user.id) {
+        throw new Error("User not authenticated or user ID not available");
+      }
+
+      // Add user_id to the mockup data
+      const mockupWithUserId = {
+        ...mockup,
+        user_id: user.id,
+      };
+
+      const response = await api.post<Mockup>("/mockups", mockupWithUserId);
       return response.data;
     } catch (error) {
       console.error("Create mockup error:", error);

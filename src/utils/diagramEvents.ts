@@ -1,5 +1,6 @@
 import { saveFileToAssets } from "../services/fileService";
 import { saveToLocalStorage, saveFilesListToLocalStorage } from "./fileManager";
+import { diagramasApi, mockupsApi } from "../services/apiService";
 
 // Define interfaces for event data (duplicated from DiagramEditor.tsx)
 interface DrawioEventBase {
@@ -73,20 +74,29 @@ export const handleDiagramAutoSave = async (
     // Update the application state with the new XML content
     setXmlContent(data.xml);
 
+    console.log("AutoSave: Actualizando en el estado");
+
+    // Intentar obtener el nombre del archivo del localStorage si no está disponible
+    let effectiveFileName = fileName;
+    if (!effectiveFileName || effectiveFileName.trim() === '') {
+      effectiveFileName = localStorage.getItem("currentDiagramName") || '';
+      console.log(`AutoSave: Usando nombre desde localStorage: ${effectiveFileName}`);
+    }
+
     // Save to localStorage if we have a filename
-    if (fileName) {
-      saveToLocalStorage(fileName, data.xml);
-      console.log(`AutoSave: XML saved to localStorage: drawio_${fileName}`);
+    if (effectiveFileName) {
+      console.log(`AutoSave: XML saved to localStorage: drawio_${effectiveFileName}`);
+      saveToLocalStorage(effectiveFileName, data.xml);
 
       // Add to files list if not already there
-      if (!files.includes(fileName)) {
-        const updatedFiles = [...files, fileName];
+      if (!files.includes(effectiveFileName)) {
+        const updatedFiles = [...files, effectiveFileName];
         updateFiles(updatedFiles);
         saveFilesListToLocalStorage(updatedFiles);
       }
 
       // Save to assets for persistence
-      saveFileToAssets(fileName, data.xml).then((result) => {
+      saveFileToAssets(effectiveFileName, data.xml).then((result) => {
         if (result.success) {
           console.log(`AutoSave: XML guardado en assets: ${result.path}`);
         } else {
@@ -96,6 +106,63 @@ export const handleDiagramAutoSave = async (
 
       // Update file list
       updateFileList();
+    }
+
+    console.log("AutoSave: Actualizando en la API");
+
+    // Actualizar en la API - usando la ruta o localStorage para obtener tipo e ID
+    try {
+      // Intentar obtener tipo e ID de la URL primero
+      const currentPath = window.location.pathname;
+      let type = '';
+      let id = '';
+      
+      // Extraer de la URL
+      const editPathMatch = currentPath.match(/\/edit\/(diagram|mockup)\/([^/]+)/);
+      if (editPathMatch) {
+        [, type, id] = editPathMatch;
+        console.log(`AutoSave: Tipo y ID extraídos de la URL: ${type}/${id}`);
+      } 
+      // Si no está en la URL, intentar obtener de localStorage
+      else {
+        type = localStorage.getItem("currentDiagramType") || '';
+        id = localStorage.getItem("currentDiagramId") || '';
+        console.log(`AutoSave: Tipo y ID extraídos de localStorage: ${type}/${id}`);
+      }
+      
+      if (type && id) {
+        const nameWithoutExt = effectiveFileName ? 
+          effectiveFileName.replace(/\.drawio\.xml$/, "") : 
+          `diagrama_${new Date().getTime()}`;
+        
+        if (type === 'diagram') {
+          // Actualizar diagrama en la API
+          console.log(`AutoSave: Actualizando diagrama ${id} en la API`);
+          diagramasApi.update(id, {
+            nombre: nameWithoutExt,
+            xml: data.xml
+          }).then(response => {
+            console.log("AutoSave: Diagrama actualizado en API:", response);
+          }).catch(error => {
+            console.error("AutoSave: Error actualizando diagrama en API:", error);
+          });
+        } else if (type === 'mockup') {
+          // Actualizar mockup en la API
+          console.log(`AutoSave: Actualizando mockup ${id} en la API`);
+          mockupsApi.update(id, {
+            nombre: nameWithoutExt,
+            xml: data.xml
+          }).then(response => {
+            console.log("AutoSave: Mockup actualizado en API:", response);
+          }).catch(error => {
+            console.error("AutoSave: Error actualizando mockup en API:", error);
+          });
+        }
+      } else {
+        console.log("AutoSave: No se pudo obtener tipo e ID para actualizar en la API");
+      }
+    } catch (error) {
+      console.error("AutoSave: Error intentando actualizar en la API:", error);
     }
   }
 };

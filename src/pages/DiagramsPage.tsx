@@ -1,13 +1,12 @@
 import { useRef, useState, useEffect } from 'react';
 import { DrawIoEmbedRef } from 'react-drawio';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 // Components
 import { ClassView } from '../components/ClassView';
 import { DiagramEditor } from '../components/DiagramEditor';
 import { DiagramHeader } from '../components/DiagramHeader';
 import { DiagramManager } from '../components/DiagramManager';
-import { ErrorMessage } from '../components/ErrorMessage';
 import { FileSelector } from '../components/FileSelector';
 import { ImageMockupConverter } from '../components/ImageMockupConverter';
 import { MockupSaveDialog } from '../components/MockupSaveDialog';
@@ -15,14 +14,14 @@ import { SaveDialog } from '../components/SaveDialog';
 
 // Custom hooks and services
 import { useDiagramManager } from '../hooks/useDiagramManager';
-import { authApi } from '../services/apiService';
+import { authApi, diagramasApi, mockupsApi } from '../services/apiService';
 
 export const DiagramsPage = () => {
   const navigate = useNavigate();
-  const drawioRef = useRef<DrawIoEmbedRef>(null);
+  const { type, id } = useParams<{ type?: string; id?: string }>();
+  const drawioRef = useRef<DrawIoEmbedRef | null>(null);
 
   const {
-    // State
     xmlContent,
     error,
     classes,
@@ -35,15 +34,12 @@ export const DiagramsPage = () => {
     newFileName,
     showMockupSaveDialog,
     mockupFileName,
-    showDiagramManager,
-    showImageConverter,
     availableFiles,
     showFileSelector,
     files,
     currentFile,
-
-    // State setters
-    setError,
+    showDiagramManager,
+    showImageConverter,
     setShowClasses,
     setShowSaveDialog,
     setNewFileName,
@@ -52,75 +48,138 @@ export const DiagramsPage = () => {
     setShowDiagramManager,
     setShowImageConverter,
     setXmlContent,
-
-    // Handlers
+    setError,
     handleCreateNewDiagram,
     handleToggleFileSelector,
-    handleToggleDiagramManager,
-    handleToggleImageConverter,
-    handleImageMockupGenerated,
     handleFileSelect,
     handleExtractClasses,
-    handleConvertToMockup,
-    handleMockupSaveConfirm,
-    handleRenameDiagram,
-    handleDeleteDiagram,
     handleFileImport,
     handleSaveAsConfirm,
     handleDownload,
     handleAutoSave,
-    handleExportXml,
+    handleConvertToMockup,
+    handleMockupSaveConfirm,
+    handleToggleDiagramManager,
+    handleRenameDiagram,
+    handleDeleteDiagram,
+    handleToggleImageConverter,
+    handleImageMockupGenerated,
+    handleExportXml
   } = useDiagramManager(drawioRef);
-  
+
+  // Handle error from API
+  const handleApiError = (error: any) => {
+    console.error('Error cargando desde API:', error);
+    
+    if (error.response?.status === 401) {
+      // Si hay un error de autenticación, redirigir al login
+      authApi.logout();
+      navigate('/login');
+    }
+    
+    return null;
+  };
+
   const handleLogout = () => {
     authApi.logout();
     navigate('/login');
   };
-  
+
+  // Cargar diagrama o mockup desde la API si estamos en la ruta /edit/:type/:id
+  useEffect(() => {
+    const loadItemFromApi = async () => {
+      if (!type || !id) return;
+
+      try {
+        let content = null;
+        let name = '';
+
+        if (type === 'diagram') {
+          // Cargar diagrama desde la API
+          const diagramData = await diagramasApi.getById(id).catch(handleApiError);
+          if (diagramData) {
+            content = diagramData.xml;
+            name = `${diagramData.nombre}.drawio.xml`;
+            console.log(`Diagrama cargado: ${name}`);
+          }
+        } else if (type === 'mockup') {
+          // Cargar mockup desde la API
+          const mockupData = await mockupsApi.getById(id).catch(handleApiError);
+          if (mockupData) {
+            content = mockupData.xml;
+            name = `${mockupData.nombre}.drawio.xml`;
+            console.log(`Mockup cargado: ${name}`);
+          }
+        }
+
+        if (content) {
+          // Guardar temporalmente en localStorage para que el autoguardado funcione
+          localStorage.setItem("currentDiagramName", name);
+          localStorage.setItem("currentDiagramId", id);
+          localStorage.setItem("currentDiagramType", type);
+          console.log(`Datos del diagrama guardados en localStorage para autoguardado`);
+          
+          // Actualizar el estado del componente
+          setXmlContent(content);
+          setShowClasses(false);
+        }
+      } catch (error) {
+        console.error('Error cargando el contenido:', error);
+      }
+    };
+
+    loadItemFromApi();
+  }, [type, id, navigate, setXmlContent, setShowClasses]);
+
   const handleGoHome = () => {
     navigate('/');
   };
 
+  // Modificar estas funciones para redirigir después de crear un mockup
+  const handleConvertToMockupWithRedirect = async () => {
+    // Primero llamar a la función original de conversión
+    handleConvertToMockup();
+  };
+
+  const handleMockupSaveConfirmWithRedirect = async () => {
+    try {
+      const createdId = await handleMockupSaveConfirm();
+      if (createdId) {
+        // Si tenemos un ID, redirigir a la página de edición
+        navigate(`/edit/mockup/${createdId}`);
+      }
+    } catch (error) {
+      console.error('Error saving mockup:', error);
+    }
+  };
+
   return (
-    <div className={showClasses ? "w-full min-h-screen bg-gray-50" : "w-screen h-screen"}>
-      {/* Error message component */}
-      {error && (
-        <ErrorMessage
-          message={error}
-          onClose={() => setError(null)}
-        />
-      )}
+    <div className="diagram-page">
+      {/* Header toolbar with buttons */}
+      <DiagramHeader
+        xmlContent={xmlContent}
+        showFileSelector={showFileSelector}
+        loadingExtract={loadingExtract}
+        loadingMockup={loadingMockup}
+        onToggleFileSelector={handleToggleFileSelector}
+        onToggleDiagramManager={handleToggleDiagramManager}
+        onToggleImageConverter={handleToggleImageConverter}
+        onExtractClasses={handleExtractClasses}
+        onConvertToMockup={handleConvertToMockupWithRedirect}
+        onDownload={handleDownload}
+        onExportXml={handleExportXml}
+        onCreateNew={handleCreateNewDiagram}
+        onLogout={handleLogout}
+        onGoHome={handleGoHome}
+      />
 
-      {/* Header toolbar for diagram editing mode */}
-      {!showClasses && (
-        <DiagramHeader
-          xmlContent={xmlContent}
-          showFileSelector={showFileSelector}
-          loadingExtract={loadingExtract}
-          loadingMockup={loadingMockup}
-          onToggleFileSelector={handleToggleFileSelector}
-          onToggleDiagramManager={handleToggleDiagramManager}
-          onToggleImageConverter={handleToggleImageConverter}
-          onExtractClasses={handleExtractClasses}
-          onConvertToMockup={handleConvertToMockup}
-          onDownload={handleDownload}
-          onExportXml={handleExportXml}
-          onCreateNew={handleCreateNewDiagram}
-          onLogout={handleLogout}
-          onGoHome={handleGoHome}
-        />
-      )}
-
-      {/* File selector sidebar */}
+      {/* File selector overlay */}
       {showFileSelector && (
         <FileSelector
           availableFiles={availableFiles}
           fileName={fileName}
           onFileSelect={handleFileSelect}
-          onNewDiagram={() => {
-            handleToggleFileSelector();
-            handleCreateNewDiagram();
-          }}
+          onNewDiagram={handleCreateNewDiagram}
         />
       )}
 
@@ -141,7 +200,7 @@ export const DiagramsPage = () => {
           mockupFileName={mockupFileName}
           loadingSave={loadingSave}
           onChangeFileName={setMockupFileName}
-          onSaveConfirm={handleMockupSaveConfirm}
+          onSaveConfirm={handleMockupSaveConfirmWithRedirect}
           onCancel={() => setShowMockupSaveDialog(false)}
         />
       )}
@@ -176,13 +235,26 @@ export const DiagramsPage = () => {
       ) : (
         <DiagramEditor
           ref={drawioRef}
-          xmlContent={xmlContent}
+          xmlContent={xmlContent || ''}
           fileName={fileName}
           currentFile={currentFile}
           files={files}
           onAutoSave={handleAutoSave}
           setXmlContent={setXmlContent}
         />
+      )}
+
+      {/* Error message */}
+      {error && (
+        <div className="bg-red-100 text-red-800 p-4 rounded-md fixed top-4 left-4 z-50 max-w-md">
+          {error}
+          <button
+            className="absolute top-1 right-1 text-red-600 hover:text-red-900"
+            onClick={() => setError(null)}
+          >
+            ×
+          </button>
+        </div>
       )}
     </div>
   );

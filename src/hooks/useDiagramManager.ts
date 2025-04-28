@@ -177,13 +177,14 @@ export function useDiagramManager(
   };
 
   // Handle save dialog confirmation
-  const handleSaveAsConfirm = async () => {
+  const handleSaveAsConfirm = async (): Promise<string | null> => {
     if (!newFileName || newFileName.trim() === "") {
       setError("Error: Debe ingresar un nombre para el archivo");
-      return;
+      return null;
     }
 
     setLoadingSave(true);
+    let createdDiagramId: string | null = null;
 
     try {
       // Ensure the filename has the correct extension
@@ -232,6 +233,8 @@ export function useDiagramManager(
           });
           
           console.log("Diagrama guardado en API:", apiResponse);
+          // Guardar el ID del diagrama creado
+          createdDiagramId = apiResponse.id;
         } catch (apiError) {
           console.error("Error guardando en API, pero guardado localmente:", apiError);
         }
@@ -264,6 +267,8 @@ export function useDiagramManager(
     } finally {
       setLoadingSave(false);
     }
+
+    return createdDiagramId;
   };
 
   // Download the current diagram as a file
@@ -359,13 +364,14 @@ export function useDiagramManager(
   };
 
   // Handle mockup save dialog confirmation
-  const handleMockupSaveConfirm = async () => {
+  const handleMockupSaveConfirm = async (): Promise<string | null> => {
     if (!mockupXmlContent) {
       setError("No hay contenido de mockup para guardar");
-      return;
+      return null;
     }
 
     setLoadingSave(true);
+    let createdMockupId: string | null = null;
 
     try {
       // Ensure the filename has the correct extension
@@ -389,6 +395,8 @@ export function useDiagramManager(
           });
           
           console.log("Mockup guardado en API:", apiResponse);
+          // Guardar el ID del mockup creado
+          createdMockupId = apiResponse.id;
         } catch (apiError) {
           console.error("Error guardando mockup en API, pero guardado localmente:", apiError);
         }
@@ -422,6 +430,8 @@ export function useDiagramManager(
     } finally {
       setLoadingSave(false);
     }
+
+    return createdMockupId;
   };
 
   // Toggle diagram manager
