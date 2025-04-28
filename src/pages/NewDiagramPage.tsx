@@ -36,7 +36,7 @@ export const NewDiagramPage = () => {
         navigate(`/edit/diagram/${createdId}`);
       } else {
         // Si no tenemos ID (error o no se pudo guardar en API), ir a la lista de diagramas
-        navigate('/diagrams');
+      navigate('/diagrams');
       }
     } catch (error) {
       console.error('Error saving diagram:', error);

@@ -47,7 +47,7 @@ export const NewMockupPage = () => {
   };
   
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div className="w-full h-full min-h-screen bg-gray-50 flex flex-col">
       {error && (
         <ErrorMessage 
           message={error}

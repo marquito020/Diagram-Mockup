@@ -32,7 +32,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   // Estos métodos ahora usan navigate en lugar de window.location
   const handleCreateNew = () => navigate('/new-diagram');
   const handleCreateNewMockup = () => navigate('/new-mockup');
-  const handleOpenExisting = () => navigate('/diagrams');
+  const handleOpenExisting = () => navigate('/diagrams-list');
   const handleShowTodoApp = () => navigate('/todos');
   const handleLogout = () => {
     authApi.logout();
@@ -165,8 +165,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
               <FolderPlus size={24} />
             </div>
             <div className="text-left">
-              <h3 className="font-semibold text-gray-800">Abrir existente</h3>
-              <p className="text-sm text-gray-500">Abrir un diagrama guardado</p>
+              <h3 className="font-semibold text-gray-800">Ver diagramas y mockups</h3>
+              <p className="text-sm text-gray-500">Lista de todos tus diagramas y mockups</p>
             </div>
           </button>
 

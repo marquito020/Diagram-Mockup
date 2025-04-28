@@ -4,6 +4,7 @@ import { WelcomeScreen } from '../components/WelcomeScreen';
 import { DiagramsPage, NewDiagramPage, TodoPage, NewMockupPage } from '../pages';
 import { useCallback } from 'react';
 import { authApi } from '../services/apiService';
+import { DiagramListPage } from '../pages/DiagramListPage';
 
 // Protected route component that redirects to login if not authenticated
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -33,7 +34,7 @@ export const Routes = () => {
   }, [navigate]);
   
   const handleOpenExisting = useCallback(() => {
-    navigate('/diagrams');
+    navigate('/diagrams-list');
   }, [navigate]);
   
   const handleShowTodoApp = useCallback(() => {
@@ -54,7 +55,7 @@ export const Routes = () => {
       <Route path="/" element={
         <ProtectedRoute>
           <WelcomeScreen 
-            onCreateNew={handleCreateNew}
+            onCreateNew={handleCreateNew} 
             onCreateNewMockup={handleCreateNewMockup}
             onOpenExisting={handleOpenExisting} 
             onShowTodoApp={handleShowTodoApp} 
@@ -73,6 +74,12 @@ export const Routes = () => {
       <Route path="/diagrams" element={
         <ProtectedRoute>
           <DiagramsPage />
+        </ProtectedRoute>
+      } />
+      
+      <Route path="/diagrams-list" element={
+        <ProtectedRoute>
+          <DiagramListPage />
         </ProtectedRoute>
       } />
       

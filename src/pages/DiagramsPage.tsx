@@ -79,7 +79,7 @@ export const DiagramsPage = () => {
     
     return null;
   };
-
+  
   const handleLogout = () => {
     authApi.logout();
     navigate('/login');
@@ -130,7 +130,7 @@ export const DiagramsPage = () => {
 
     loadItemFromApi();
   }, [type, id, navigate, setXmlContent, setShowClasses]);
-
+  
   const handleGoHome = () => {
     navigate('/');
   };
@@ -154,24 +154,24 @@ export const DiagramsPage = () => {
   };
 
   return (
-    <div className="diagram-page">
+    <div className="diagram-page w-full h-full min-h-screen bg-gray-50 flex flex-col">
       {/* Header toolbar with buttons */}
-      <DiagramHeader
-        xmlContent={xmlContent}
-        showFileSelector={showFileSelector}
-        loadingExtract={loadingExtract}
-        loadingMockup={loadingMockup}
-        onToggleFileSelector={handleToggleFileSelector}
-        onToggleDiagramManager={handleToggleDiagramManager}
-        onToggleImageConverter={handleToggleImageConverter}
-        onExtractClasses={handleExtractClasses}
+        <DiagramHeader
+          xmlContent={xmlContent}
+          showFileSelector={showFileSelector}
+          loadingExtract={loadingExtract}
+          loadingMockup={loadingMockup}
+          onToggleFileSelector={handleToggleFileSelector}
+          onToggleDiagramManager={handleToggleDiagramManager}
+          onToggleImageConverter={handleToggleImageConverter}
+          onExtractClasses={handleExtractClasses}
         onConvertToMockup={handleConvertToMockupWithRedirect}
-        onDownload={handleDownload}
-        onExportXml={handleExportXml}
-        onCreateNew={handleCreateNewDiagram}
-        onLogout={handleLogout}
-        onGoHome={handleGoHome}
-      />
+          onDownload={handleDownload}
+          onExportXml={handleExportXml}
+          onCreateNew={handleCreateNewDiagram}
+          onLogout={handleLogout}
+          onGoHome={handleGoHome}
+        />
 
       {/* File selector overlay */}
       {showFileSelector && (
