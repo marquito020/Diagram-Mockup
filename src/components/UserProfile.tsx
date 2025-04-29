@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User as UserCircle, LogOut } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { authApi } from '../services/apiService';
 import { User } from '../types/api';
 

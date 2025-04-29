@@ -8,7 +8,7 @@ import {
 } from "../types/api";
 
 // Base API URL
-const API_URL = "http://localhost:3000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 // Create axios instance with base URL
 const api = axios.create({
@@ -242,6 +242,19 @@ export const mockupsApi = {
       return response.data;
     } catch (error) {
       console.error("Create mockup error:", error);
+      throw error;
+    }
+  },
+
+  // Generar código Angular desde mockup
+  generateAngular: async (xml: string): Promise<Blob> => {
+    try {
+      const response = await api.post('/chatgpt/generate-angular', { xml }, {
+        responseType: 'blob', // Importante: especificar que esperamos un blob (archivo binario)
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error generando código Angular:', error);
       throw error;
     }
   },

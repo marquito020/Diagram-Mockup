@@ -1,54 +1,132 @@
-# React + TypeScript + Vite
+# Aplicación de Diagramas UML y Mockups
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este proyecto es una aplicación web para crear, gestionar y convertir diagramas UML y mockups, con funcionalidades de exportación de código Angular.
 
-Currently, two official plugins are available:
+## Tecnologías Utilizadas
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- React 19 con TypeScript
+- Vite como bundler
+- Tailwind CSS para estilos
+- Axios para peticiones HTTP
+- React Router para navegación
+- react-drawio para el editor de diagramas
 
-## Expanding the ESLint configuration
+## Requisitos Previos
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Node.js 18 o superior
+- npm 8 o superior
+- Docker y Docker Compose (opcional, para despliegue con contenedores)
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## Configuración del Proyecto
+
+### Instalación Local
+
+1. Clonar el repositorio:
+   ```bash
+   git clone <URL-del-repositorio>
+   cd nombre-del-proyecto
+   ```
+
+2. Instalar dependencias:
+   ```bash
+   npm install
+   ```
+
+3. Crear archivo de variables de entorno:
+   ```bash
+   cp .env.example .env
+   ```
+   Modificar las variables según sea necesario.
+
+4. Iniciar la aplicación en modo desarrollo:
+   ```bash
+   npm run dev
+   ```
+   La aplicación estará disponible en `http://localhost:5173`
+
+### Compilación para Producción
+
+Para generar la versión de producción:
+
+```bash
+npm run build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Los archivos generados se encontrarán en el directorio `dist`.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Despliegue con Docker
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+### Usando Docker Compose (Recomendado)
+
+1. Configurar variables de entorno en `docker-compose.yml` si es necesario.
+
+2. Iniciar la aplicación:
+   ```bash
+   docker-compose up -d
+   ```
+   
+   La aplicación estará disponible en `http://localhost:8080`
+
+### Usando Docker Directamente
+
+1. Construir la imagen:
+   ```bash
+   docker build -t nombre-del-proyecto .
+   ```
+
+2. Ejecutar el contenedor:
+   ```bash
+   docker run -p 8080:80 -e VITE_API_URL=http://localhost:3000 -d nombre-del-proyecto
+   ```
+
+## Variables de Entorno
+
+| Variable      | Descripción                        | Valor por defecto        |
+|---------------|------------------------------------|--------------------------|
+| VITE_API_URL  | URL del servidor backend           | http://localhost:3000    |
+
+## Estructura del Proyecto
+
 ```
+.
+├── public/              # Archivos estáticos
+├── src/                 # Código fuente
+│   ├── components/      # Componentes React
+│   ├── hooks/           # Hooks personalizados
+│   ├── pages/           # Páginas/vistas de la aplicación
+│   ├── services/        # Servicios para APIs
+│   └── types/           # Definiciones de tipos
+├── .env.example         # Ejemplo de variables de entorno
+├── Dockerfile           # Configuración de Docker
+├── docker-compose.yml   # Configuración de Docker Compose
+└── vite.config.ts       # Configuración de Vite
+```
+
+## Características Principales
+
+- Creación y edición de diagramas UML
+- Conversión de imágenes a mockups
+- Exportación de diagrama a código Angular
+- Gestión de diagramas (guardar, cargar, exportar)
+- Extracción de clases y atributos desde diagramas
+
+## Resolución de Problemas
+
+### La API no está disponible
+
+Verifica que el servidor backend esté en ejecución y que la variable `VITE_API_URL` apunte a la dirección correcta.
+
+### Problema con la autenticación
+
+Si experimentas problemas de autenticación, verifica que:
+1. El token se está almacenando correctamente en localStorage
+2. El usuario está registrado en el sistema
+3. Las credenciales son correctas
+
+## Licencia
+
+[Especificar licencia aquí]
+
+## Contacto
+
+[Información de contacto aquí]

@@ -20,6 +20,7 @@ export const DiagramsPage = () => {
   const navigate = useNavigate();
   const { type, id } = useParams<{ type?: string; id?: string }>();
   const drawioRef = useRef<DrawIoEmbedRef | null>(null);
+  const [loadingAngular, setLoadingAngular] = useState(false);
 
   const {
     xmlContent,
@@ -135,6 +136,44 @@ export const DiagramsPage = () => {
     navigate('/');
   };
 
+  // Función para generar código Angular
+  const handleGenerateAngular = async () => {
+    if (!xmlContent) {
+      setError('No hay contenido para generar código Angular');
+      return;
+    }
+
+    try {
+      setLoadingAngular(true);
+      
+      // Llamar al endpoint para generar el código Angular
+      const blob = await mockupsApi.generateAngular(xmlContent);
+      
+      // Crear un objeto URL para el blob
+      const url = window.URL.createObjectURL(blob);
+      
+      // Crear un elemento <a> temporal para descargar el archivo
+      const a = document.createElement('a');
+      a.href = url;
+      const fileName = currentFile ? currentFile.toString() : mockupFileName || 'angular-project';
+      a.download = fileName.replace(/\.(drawio|xml)$/, '') + '-angular.zip';
+      
+      // Agregar el elemento al DOM y hacer clic en él
+      document.body.appendChild(a);
+      a.click();
+      
+      // Limpiar después de la descarga
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+    } catch (error) {
+      console.error('Error generando código Angular:', error);
+      setError('Error al generar código Angular. Inténtelo de nuevo más tarde.');
+    } finally {
+      setLoadingAngular(false);
+    }
+  };
+
   // Modificar estas funciones para redirigir después de crear un mockup
   const handleConvertToMockupWithRedirect = async () => {
     // Primero llamar a la función original de conversión
@@ -161,11 +200,13 @@ export const DiagramsPage = () => {
           showFileSelector={showFileSelector}
           loadingExtract={loadingExtract}
           loadingMockup={loadingMockup}
+          loadingAngular={loadingAngular}
           onToggleFileSelector={handleToggleFileSelector}
           onToggleDiagramManager={handleToggleDiagramManager}
           onToggleImageConverter={handleToggleImageConverter}
           onExtractClasses={handleExtractClasses}
-        onConvertToMockup={handleConvertToMockupWithRedirect}
+          onConvertToMockup={handleConvertToMockupWithRedirect}
+          onGenerateAngular={type === 'mockup' ? handleGenerateAngular : undefined}
           onDownload={handleDownload}
           onExportXml={handleExportXml}
           onCreateNew={handleCreateNewDiagram}

@@ -2,7 +2,7 @@ import { forwardRef } from 'react';
 import { DrawIoEmbed, DrawIoEmbedRef } from 'react-drawio';
 import * as DiagramEvents from '../utils/diagramEvents';
 import * as FileManager from '../utils/fileManager';
-import { saveFileToAssets, downloadFile } from '../services/fileService';
+import { saveFileToAssets } from '../services/fileService';
 
 // Define interfaces for event data
 interface DrawioEventBase {
@@ -27,7 +27,7 @@ interface DrawioAutoSaveEvent extends DrawioEventBase {
 }
 
 // Use union type for all possible events
-type DrawioEvent = DrawioSaveEvent | DrawioAutoSaveEvent;
+// type DrawioEvent = DrawioSaveEvent | DrawioAutoSaveEvent;
 
 interface DiagramEditorProps {
   xmlContent: string;

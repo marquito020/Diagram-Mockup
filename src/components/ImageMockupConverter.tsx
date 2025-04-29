@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Upload, Image, AlertCircle, Check, X } from 'lucide-react';
+import { Upload, AlertCircle, Check, X } from 'lucide-react';
 import { convertImageToMockup } from '../services/openaiService';
 
 interface ImageMockupConverterProps {
