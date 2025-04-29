@@ -325,28 +325,83 @@ export function useDiagramManager(
     if (xmlContent) {
       try {
         setLoadingMockup(true);
+        console.log("Iniciando conversión a mockup...");
+        
+        // Verificar primero si el XML es válido
+        try {
+          const parser = new DOMParser();
+          const xmlDoc = parser.parseFromString(xmlContent, "text/xml");
+          if (xmlDoc.querySelector("parsererror")) {
+            throw new Error("El XML del diagrama no es válido");
+          }
+        } catch (parseError) {
+          console.error("Error al validar el XML del diagrama:", parseError);
+          setError("El XML del diagrama no es válido para la conversión");
+          setLoadingMockup(false);
+          return;
+        }
 
         // Import the processXmlContent function directly from diagramProcessor
         import("../utils/diagramProcessor").then(({ processXmlContent }) => {
-          // Extract classes from the XML
-          const extractedClasses = processXmlContent(xmlContent);
+          try {
+            // Extract classes from the XML
+            const extractedClasses = processXmlContent(xmlContent);
+            console.log(`Clases extraídas: ${extractedClasses.length}`);
+            
+            if (extractedClasses.length === 0) {
+              console.warn("No se encontraron clases en el diagrama");
+            }
 
-          // Import the converter and generate mockup
-          import("../utils/mockupConverter").then(({ convertToMockup }) => {
-            // Convert to mockup
-            const mockupXml = convertToMockup(xmlContent, extractedClasses);
+            // Import the converter and generate mockup
+            import("../utils/mockupConverter").then(({ convertToMockup }) => {
+              try {
+                // Convert to mockup
+                const mockupXml = convertToMockup(xmlContent, extractedClasses);
+                console.log("Mockup generado correctamente");
+                
+                // Verificar que el mockup generado sea válido
+                try {
+                  const parser = new DOMParser();
+                  const mockupDoc = parser.parseFromString(mockupXml, "text/xml");
+                  if (mockupDoc.querySelector("parsererror")) {
+                    throw new Error("El mockup generado no es válido");
+                  }
+                } catch (validationError) {
+                  console.error("Error validando mockup generado:", validationError);
+                  setError("Error al generar el mockup: formato XML inválido");
+                  setLoadingMockup(false);
+                  return;
+                }
 
-            // Store the mockup XML for saving
-            setMockupXmlContent(mockupXml);
+                // Store the mockup XML for saving
+                setMockupXmlContent(mockupXml);
 
-            // Set a default name based on original file
-            const baseName = fileName.replace(/\.drawio\.xml$/, "");
-            setMockupFileName(`mockup_${baseName || "nuevo"}`);
+                // Set a default name based on original file
+                const baseName = fileName.replace(/\.drawio\.xml$/, "");
+                setMockupFileName(`mockup_${baseName || "nuevo"}`);
 
-            // Show the save dialog
-            setShowMockupSaveDialog(true);
+                // Show the save dialog
+                setShowMockupSaveDialog(true);
+                setLoadingMockup(false);
+              } catch (conversionError) {
+                console.error("Error en la conversión a mockup:", conversionError);
+                setError(`Error al convertir a mockup: ${conversionError instanceof Error ? conversionError.message : "Error desconocido"}`);
+                setLoadingMockup(false);
+              }
+            }).catch(importError => {
+              console.error("Error al importar el convertidor:", importError);
+              setError("Error al cargar el convertidor de mockups");
+              setLoadingMockup(false);
+            });
+          } catch (processingError) {
+            console.error("Error al procesar el XML:", processingError);
+            setError(`Error al procesar el diagrama: ${processingError instanceof Error ? processingError.message : "Error desconocido"}`);
             setLoadingMockup(false);
-          });
+          }
+        }).catch(importError => {
+          console.error("Error al importar el procesador:", importError);
+          setError("Error al cargar el procesador de diagramas");
+          setLoadingMockup(false);
         });
       } catch (error) {
         console.error("Error preparing mockup conversion:", error);

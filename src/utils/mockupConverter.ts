@@ -12,19 +12,63 @@ export const convertToMockup = (
   // Si no tenemos clases, intentamos extraerlas del XML
   if (!classes.length && xmlContent) {
     try {
+      console.log("No hay clases proporcionadas, intentando extraerlas del XML...");
       const parser = new DOMParser();
+      
+      // Verificar primero si el XML es válido
       const xmlDoc = parser.parseFromString(xmlContent, "text/xml");
+      if (xmlDoc.querySelector("parsererror")) {
+        console.error("El XML de entrada no es válido");
+        // Devolver un mockup vacío si el XML no es válido
+        return createEmptyMockup();
+      }
 
       // Crear un nuevo diagrama desde cero basado en las clases encontradas
       const mockupXml = generateMockupXml(classes);
+      
+      // Asegurar que no hay problemas con la codificación
+      try {
+        // Verificar que el XML resultante sea válido para evitar problemas con atob()
+        const validationDoc = parser.parseFromString(mockupXml, "text/xml");
+        if (validationDoc.querySelector("parsererror")) {
+          console.error("El XML generado no es válido");
+          return createEmptyMockup();
+        }
+      } catch (validationError) {
+        console.error("Error de validación:", validationError);
+        return createEmptyMockup();
+      }
+      
       return mockupXml;
     } catch (error) {
       console.error("Error convirtiendo a mockup:", error);
-      throw new Error("Error al convertir diagrama a mockup");
+      // En caso de error, devolver un mockup vacío
+      return createEmptyMockup();
     }
   } else {
     // Usar las clases proporcionadas
-    return generateMockupXml(classes);
+    try {
+      // Generar el mockup con las clases proporcionadas
+      const mockupXml = generateMockupXml(classes);
+      
+      // Verificar que el resultado sea válido
+      const parser = new DOMParser();
+      try {
+        const validationDoc = parser.parseFromString(mockupXml, "text/xml");
+        if (validationDoc.querySelector("parsererror")) {
+          console.error("El XML generado con clases proporcionadas no es válido");
+          return createEmptyMockup();
+        }
+      } catch (validationError) {
+        console.error("Error de validación con clases proporcionadas:", validationError);
+        return createEmptyMockup();
+      }
+      
+      return mockupXml;
+    } catch (error) {
+      console.error("Error generando mockup:", error);
+      return createEmptyMockup();
+    }
   }
 };
 
@@ -41,6 +85,20 @@ const generateMockupXml = (classes: ClassInfo[]): string => {
     // Como es difícil manipular directamente el XML/SVG, vamos a hacerlo de otra manera
     // Crearemos un contenido modificado a partir del template
     const baseMockup = createEmptyMockup();
+    
+    // Asegurar que el XML base es válido
+    try {
+      // Verificar si el XML se puede parsear correctamente
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(baseMockup, "text/xml");
+      if (doc.querySelector("parsererror")) {
+        console.error("El XML base no es válido");
+        return createEmptyMockup();
+      }
+    } catch (parseError) {
+      console.error("Error al validar el XML base:", parseError);
+      return createEmptyMockup();
+    }
     
     // Eliminar la tabla predeterminada y el título
     let modifiedMockup = baseMockup;
@@ -104,7 +162,12 @@ const generateMockupXml = (classes: ClassInfo[]): string => {
     let allTablesHtml = '';
     
     classes.forEach((classInfo, index) => {
-      allTablesHtml += createTableForClass(classInfo, index);
+      try {
+        allTablesHtml += createTableForClass(classInfo, index);
+      } catch (error) {
+        console.error(`Error al crear tabla para la clase ${classInfo.name}:`, error);
+        // Continuar con la siguiente clase si hay error
+      }
     });
     
     // Insertar las tablas en el XML base modificado
@@ -112,6 +175,19 @@ const generateMockupXml = (classes: ClassInfo[]): string => {
       modifiedMockup.substring(0, rootEndIndex) + 
       allTablesHtml + 
       modifiedMockup.substring(rootEndIndex);
+    
+    // Verificar que el XML resultante sea válido
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(modifiedMockup, "text/xml");
+      if (doc.querySelector("parsererror")) {
+        console.error("El XML generado no es válido");
+        return baseMockup;
+      }
+    } catch (parseError) {
+      console.error("Error al validar el XML generado:", parseError);
+      return baseMockup;
+    }
     
     return modifiedMockup;
   } catch (error) {
@@ -122,126 +198,159 @@ const generateMockupXml = (classes: ClassInfo[]): string => {
 };
 
 /**
- * Crea una tabla para una clase específica
+ * Crea una tabla para una clase específica dentro de una ventana de navegador web con sidebar
  */
 const createTableForClass = (classInfo: ClassInfo, index: number): string => {
-  const yOffset = index * 350 + 150; // Espaciado vertical entre tablas
+  const yOffset = index * 650 + 50; // Mayor espaciado vertical entre ventanas
+  const windowWidth = 800;
+  const windowHeight = 500;
+  const sidebarWidth = 150;
+  const contentWidth = windowWidth - sidebarWidth - 20; // 20 de margen
   
-  // Crear encabezado de tabla con el nombre de la clase
+  // Crear una ventana de navegador web simplificada
   let tableHtml = `
-    <!-- Tabla para la clase ${classInfo.name} -->
-    <mxCell id="class-${index}-title" value="${classInfo.name}" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontStyle=1" vertex="1" parent="page-container">
-      <mxGeometry x="150" y="${yOffset-50}" width="497" height="30" as="geometry" />
+    <!-- Ventana de navegador para ${classInfo.name} -->
+    <mxCell id="browser-${index}" value="" style="shape=mxgraph.mockup.containers.browserWindow;html=1;" parent="1" vertex="1">
+      <mxGeometry x="50" y="${yOffset}" width="${windowWidth}" height="${windowHeight}" as="geometry"/>
     </mxCell>
     
-    <!-- Botón Crear -->
-    <mxCell id="class-${index}-create-button" value="+ Crear" style="rounded=1;fillColor=#4CAF50;strokeColor=none;fontColor=#ffffff;align=center;verticalAlign=middle;fontStyle=0;fontSize=12;" vertex="1" parent="page-container">
-      <mxGeometry x="40" y="${yOffset-40}" width="80" height="30" as="geometry" />
+    <!-- Título de la ventana del navegador -->
+    <mxCell id="browser-${index}-title" value="${classInfo.name}" style="text;html=1;" parent="browser-${index}" vertex="1">
+      <mxGeometry x="40" y="10" width="${windowWidth-80}" height="20" as="geometry"/>
     </mxCell>
     
-    <!-- Tabla de atributos con columnas siendo los atributos -->
-    <mxCell id="class-${index}-table" value="" style="shape=table;html=1;whiteSpace=wrap;startSize=0;container=1;collapsible=0;childLayout=tableLayout;" vertex="1" parent="page-container">
-      <mxGeometry x="40" y="${yOffset}" width="730" height="120" as="geometry" />
+    <!-- URL del navegador -->
+    <mxCell id="browser-${index}-url" value="https://example.com/${classInfo.name.toLowerCase()}" style="text;html=1;" parent="browser-${index}" vertex="1">
+      <mxGeometry x="10" y="30" width="${windowWidth-20}" height="20" as="geometry"/>
     </mxCell>
     
-    <!-- Fila de cabecera con los nombres de los atributos -->
-    <mxCell id="class-${index}-header" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;collapsible=0;dropTarget=0;fillColor=#dae8fc;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;strokeColor=#6c8ebf;" vertex="1" parent="class-${index}-table">
-      <mxGeometry width="730" height="40" as="geometry" />
+    <!-- Sidebar -->
+    <mxCell id="sidebar-${index}" value="" style="shape=mxgraph.mockup.containers.marginRect;html=1;" parent="browser-${index}" vertex="1">
+      <mxGeometry x="10" y="70" width="${sidebarWidth}" height="${windowHeight-80}" as="geometry"/>
     </mxCell>
     
-    <!-- ID siempre es la primera columna -->
-    <mxCell id="class-${index}-header-id" value="ID" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;overflow=hidden;fillColor=#dae8fc;top=0;left=0;bottom=0;right=0;pointerEvents=1;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="class-${index}-header">
-      <mxGeometry width="60" height="40" as="geometry">
-        <mxRectangle width="60" height="40" as="alternateBounds" />
-      </mxGeometry>
+    <!-- Título del sidebar -->
+    <mxCell id="sidebar-title-${index}" value="Clases" style="text;html=1;align=center;" parent="sidebar-${index}" vertex="1">
+      <mxGeometry x="10" y="10" width="${sidebarWidth-20}" height="30" as="geometry"/>
     </mxCell>`;
-    
-  // Crear una columna para cada atributo en la fila del encabezado
-  classInfo.attributes.forEach((attr, attrIndex) => {
-    const colWidth = Math.floor(570 / classInfo.attributes.length); // Distribuir el ancho disponible
-    
+
+  // Añadir enlaces a todas las clases en el sidebar
+  for (let i = 0; i < Math.min(5, index + 1); i++) {
     tableHtml += `
-    <mxCell id="class-${index}-header-attr-${attrIndex}" value="${attr.name}" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;overflow=hidden;fillColor=#dae8fc;top=0;left=0;bottom=0;right=0;pointerEvents=1;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="class-${index}-header">
-      <mxGeometry x="${60 + attrIndex * colWidth}" width="${colWidth}" height="40" as="geometry">
-        <mxRectangle width="${colWidth}" height="40" as="alternateBounds" />
-      </mxGeometry>
-    </mxCell>`;
-  });
-  
-  // Añadir columna de acciones al final del encabezado
-  tableHtml += `
-    <mxCell id="class-${index}-header-actions" value="Acciones" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;overflow=hidden;fillColor=#dae8fc;top=0;left=0;bottom=0;right=0;pointerEvents=1;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="class-${index}-header">
-      <mxGeometry x="${60 + classInfo.attributes.length * Math.floor(570 / classInfo.attributes.length)}" width="100" height="40" as="geometry">
-        <mxRectangle width="100" height="40" as="alternateBounds" />
-      </mxGeometry>
-    </mxCell>`;
-  
-  // Agregar filas con datos de ejemplo (2 filas)
-  for (let rowIndex = 0; rowIndex < 2; rowIndex++) {
-    const rowBg = rowIndex % 2 === 0 ? 'fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;' : 'fillColor=none;';
     
-    tableHtml += `
-    <!-- Fila de datos ${rowIndex + 1} -->
-    <mxCell id="class-${index}-row-${rowIndex}" value="" style="shape=tableRow;horizontal=0;startSize=0;swimlaneHead=0;swimlaneBody=0;top=0;left=0;bottom=0;right=0;collapsible=0;dropTarget=0;${rowBg}points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" vertex="1" parent="class-${index}-table">
-      <mxGeometry y="${40 + rowIndex * 40}" width="730" height="40" as="geometry" />
-    </mxCell>
-    
-    <!-- Celda ID -->
-    <mxCell id="class-${index}-cell-${rowIndex}-id" value="${rowIndex + 1}" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;overflow=hidden;${rowBg}top=0;left=0;bottom=0;right=0;pointerEvents=1;align=center;" vertex="1" parent="class-${index}-row-${rowIndex}">
-      <mxGeometry width="60" height="40" as="geometry">
-        <mxRectangle width="60" height="40" as="alternateBounds" />
-      </mxGeometry>
-    </mxCell>`;
-    
-    // Celdas para cada atributo
-    classInfo.attributes.forEach((attr, attrIndex) => {
-      const colWidth = Math.floor(570 / classInfo.attributes.length);
-      // Generar datos de ejemplo según el tipo de atributo
-      let exampleValue = "";
-      const attrType = attr.type.toLowerCase();
-      
-      if (attrType.includes("string") || attrType.includes("text")) {
-        exampleValue = "Texto ejemplo";
-      } else if (attrType.includes("int") || attrType.includes("number")) {
-        exampleValue = `${rowIndex * 10 + 5}`;
-      } else if (attrType.includes("date")) {
-        exampleValue = "2024-01-01";
-      } else if (attrType.includes("bool")) {
-        exampleValue = rowIndex === 0 ? "Sí" : "No";
-      } else {
-        exampleValue = "Valor";
-      }
-      
-      tableHtml += `
-      <mxCell id="class-${index}-cell-${rowIndex}-attr-${attrIndex}" value="${exampleValue}" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;overflow=hidden;${rowBg}top=0;left=0;bottom=0;right=0;pointerEvents=1;align=center;" vertex="1" parent="class-${index}-row-${rowIndex}">
-        <mxGeometry x="${60 + attrIndex * colWidth}" width="${colWidth}" height="40" as="geometry">
-          <mxRectangle width="${colWidth}" height="40" as="alternateBounds" />
-        </mxGeometry>
-      </mxCell>`;
-    });
-    
-    // Celda de acciones
-    tableHtml += `
-    <mxCell id="class-${index}-cell-${rowIndex}-actions" style="shape=partialRectangle;html=1;whiteSpace=wrap;connectable=0;overflow=hidden;${rowBg}top=0;left=0;bottom=0;right=0;pointerEvents=1;" vertex="1" parent="class-${index}-row-${rowIndex}">
-      <mxGeometry x="${60 + classInfo.attributes.length * Math.floor(570 / classInfo.attributes.length)}" width="100" height="40" as="geometry">
-        <mxRectangle width="100" height="40" as="alternateBounds" />
-      </mxGeometry>
-    </mxCell>
-    
-    <mxCell id="class-${index}-btn-edit-${rowIndex}" value="Editar" style="rounded=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;align=center;verticalAlign=middle;fontStyle=0;fontSize=10;" vertex="1" parent="class-${index}-cell-${rowIndex}-actions">
-      <mxGeometry x="10" y="10" width="35" height="20" as="geometry" />
-    </mxCell>
-    
-    <mxCell id="class-${index}-btn-delete-${rowIndex}" value="Eliminar" style="rounded=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#333333;align=center;verticalAlign=middle;fontStyle=0;fontSize=10;" vertex="1" parent="class-${index}-cell-${rowIndex}-actions">
-      <mxGeometry x="50" y="10" width="35" height="20" as="geometry" />
+    <!-- Enlace clase ${i} -->
+    <mxCell id="sidebar-link-${index}-${i}" value="Clase ${i+1}" style="text;html=1;" parent="sidebar-${index}" vertex="1">
+      <mxGeometry x="20" y="${50 + i * 30}" width="${sidebarWidth-40}" height="20" as="geometry"/>
     </mxCell>`;
   }
   
-  // Agregar botón de guardar para la tabla
+  // Añadir botón de salir
   tableHtml += `
+    
+    <!-- Botón Salir -->
+    <mxCell id="sidebar-exit-${index}" value="Salir" style="text;html=1;fontStyle=1;align=center;" parent="sidebar-${index}" vertex="1">
+      <mxGeometry x="20" y="${windowHeight-150}" width="${sidebarWidth-40}" height="30" as="geometry"/>
+    </mxCell>
+    
+    <!-- Contenido principal -->
+    <mxCell id="content-${index}" value="" style="shape=mxgraph.mockup.containers.marginRect;html=1;" parent="browser-${index}" vertex="1">
+      <mxGeometry x="${sidebarWidth+10}" y="70" width="${contentWidth}" height="${windowHeight-80}" as="geometry"/>
+    </mxCell>
+    
+    <!-- Título del contenido -->
+    <mxCell id="content-title-${index}" value="Listado de ${classInfo.name}" style="text;html=1;align=center;fontStyle=1;fontSize=16;" parent="content-${index}" vertex="1">
+      <mxGeometry x="10" y="10" width="${contentWidth-20}" height="30" as="geometry"/>
+    </mxCell>
+    
+    <!-- Botón Crear -->
+    <mxCell id="content-create-${index}" value="+ Crear" style="shape=mxgraph.mockup.buttons.button;html=1;" parent="content-${index}" vertex="1">
+      <mxGeometry x="10" y="50" width="80" height="30" as="geometry"/>
+    </mxCell>
+    
+    <!-- Tabla de datos -->
+    <mxCell id="data-container-${index}" value="" style="shape=mxgraph.mockup.containers.marginRect;html=1;" parent="content-${index}" vertex="1">
+      <mxGeometry x="10" y="90" width="${contentWidth-20}" height="${windowHeight-200}" as="geometry"/>
+    </mxCell>`;
+  
+  // Añadir encabezados de tabla
+  tableHtml += `
+    
+    <!-- Encabezados de tabla -->
+    <mxCell id="header-row-${index}" value="" style="shape=mxgraph.mockup.containers.rrect;html=1;fillColor=#ddeeff;" parent="data-container-${index}" vertex="1">
+      <mxGeometry x="0" y="0" width="${contentWidth-20}" height="30" as="geometry"/>
+    </mxCell>
+    
+    <!-- Encabezado ID -->
+    <mxCell id="header-id-${index}" value="ID" style="text;html=1;align=center;" parent="header-row-${index}" vertex="1">
+      <mxGeometry width="40" height="30" as="geometry"/>
+    </mxCell>`;
+  
+  // Añadir encabezados para los atributos
+  const maxAttrs = Math.min(classInfo.attributes.length, 4); // Limitamos a 4 para que quepa mejor
+  const colWidth = Math.floor((contentWidth - 20 - 40 - 100) / maxAttrs); // Ancho menos margen, ID y Acciones
+  
+  for (let i = 0; i < maxAttrs; i++) {
+    const attr = classInfo.attributes[i];
+    tableHtml += `
+    
+    <!-- Encabezado ${attr.name} -->
+    <mxCell id="header-attr-${index}-${i}" value="${attr.name}" style="text;html=1;align=center;" parent="header-row-${index}" vertex="1">
+      <mxGeometry x="${40 + i * colWidth}" width="${colWidth}" height="30" as="geometry"/>
+    </mxCell>`;
+  }
+  
+  // Añadir encabezado de acciones
+  tableHtml += `
+    
+    <!-- Encabezado Acciones -->
+    <mxCell id="header-actions-${index}" value="Acciones" style="text;html=1;align=center;" parent="header-row-${index}" vertex="1">
+      <mxGeometry x="${40 + maxAttrs * colWidth}" width="100" height="30" as="geometry"/>
+    </mxCell>`;
+  
+  // Añadir filas de datos (3 filas)
+  for (let rowIndex = 0; rowIndex < 3; rowIndex++) {
+    const rowColor = rowIndex % 2 === 0 ? "fillColor=#f8f8f8;" : "";
+    
+    tableHtml += `
+    
+    <!-- Fila ${rowIndex+1} -->
+    <mxCell id="row-${index}-${rowIndex}" value="" style="shape=mxgraph.mockup.containers.rrect;html=1;${rowColor}" parent="data-container-${index}" vertex="1">
+      <mxGeometry x="0" y="${30 + rowIndex * 30}" width="${contentWidth-20}" height="30" as="geometry"/>
+    </mxCell>
+    
+    <!-- Celda ID -->
+    <mxCell id="cell-id-${index}-${rowIndex}" value="${rowIndex + 1}" style="text;html=1;align=center;" parent="row-${index}-${rowIndex}" vertex="1">
+      <mxGeometry width="40" height="30" as="geometry"/>
+    </mxCell>`;
+    
+    // Añadir celdas para cada atributo
+    for (let i = 0; i < maxAttrs; i++) {
+      // Valores de ejemplo
+      let exampleValue = `Valor ${i+1}`;
+      
+      tableHtml += `
+    
+    <!-- Celda atributo ${i+1} -->
+    <mxCell id="cell-attr-${index}-${rowIndex}-${i}" value="${exampleValue}" style="text;html=1;align=center;" parent="row-${index}-${rowIndex}" vertex="1">
+      <mxGeometry x="${40 + i * colWidth}" width="${colWidth}" height="30" as="geometry"/>
+    </mxCell>`;
+    }
+    
+    // Celda de acciones con texto "Editar / Eliminar"
+    tableHtml += `
+    
+    <!-- Celda acciones -->
+    <mxCell id="cell-actions-${index}-${rowIndex}" value="Editar / Eliminar" style="text;html=1;align=center;" parent="row-${index}-${rowIndex}" vertex="1">
+      <mxGeometry x="${40 + maxAttrs * colWidth}" width="100" height="30" as="geometry"/>
+    </mxCell>`;
+  }
+  
+  // Botón guardar
+  tableHtml += `
+    
     <!-- Botón Guardar -->
-    <mxCell id="class-${index}-save-button" value="Guardar" style="rounded=1;fillColor=#0057D8;strokeColor=none;fontColor=#ffffff;align=center;verticalAlign=middle;fontStyle=0;fontSize=12;" vertex="1" parent="page-container">
-      <mxGeometry x="350" y="${yOffset + 130}" width="110" height="30" as="geometry" />
+    <mxCell id="save-button-${index}" value="Guardar" style="shape=mxgraph.mockup.buttons.button;html=1;" parent="content-${index}" vertex="1">
+      <mxGeometry x="${(contentWidth-20)/2 - 50}" y="${windowHeight-170}" width="100" height="30" as="geometry"/>
     </mxCell>`;
   
   return tableHtml;
