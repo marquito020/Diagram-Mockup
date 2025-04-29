@@ -12,7 +12,7 @@ export const checkFileExists = async (fileName: string): Promise<{ exists: boole
   return { exists: false };
 };
 
-export const saveFile = async (fileName: string, content: string): Promise<{ success: boolean, path?: string }> => {
+export const saveFile = async (fileName: string): Promise<{ success: boolean, path?: string }> => {
   // En un escenario real, esto enviaría el contenido al servidor para guardarlo
   // Aquí solo simularemos una respuesta exitosa
   

@@ -85,6 +85,37 @@ Los archivos generados se encontrarán en el directorio `dist`.
 |---------------|------------------------------------|--------------------------|
 | VITE_API_URL  | URL del servidor backend           | http://localhost:3000    |
 
+### Configuración de Variables de Entorno
+
+#### En Desarrollo Local
+
+1. Crear un archivo `.env` en la raíz del proyecto:
+   ```
+   VITE_API_URL=http://localhost:3000
+   ```
+
+2. Las variables de entorno son cargadas automáticamente por Vite.
+
+#### En Docker
+
+Las variables de entorno se pueden configurar de varias maneras:
+
+1. **En docker-compose.yml**:
+   ```yaml
+   environment:
+     - VITE_API_URL=http://mi-api-url.com
+   ```
+
+2. **Al ejecutar el contenedor**:
+   ```bash
+   docker run -p 8080:80 -e VITE_API_URL=http://mi-api-url.com -d nombre-del-proyecto
+   ```
+
+3. **Con un archivo .env**:
+   ```bash
+   docker run -p 8080:80 --env-file .env -d nombre-del-proyecto
+   ```
+
 ## Estructura del Proyecto
 
 ```

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { LogOut } from 'lucide-react';
 import { authApi } from '../services/apiService';
 import { User } from '../types/api';
-
+import { AxiosError } from 'axios';
 interface UserProfileProps {
   onLogout: () => void;
 }
@@ -35,7 +35,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ onLogout }) => {
         } catch (error) {
           console.error('Error fetching user profile:', error);
           // If we get 401, clear the token as it's invalid
-          if (error.response?.status === 401) {
+          if (error instanceof AxiosError && error.response?.status === 401) {
             authApi.logout();
           }
         }

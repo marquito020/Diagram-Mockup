@@ -9,6 +9,11 @@ COPY vite.config.ts ./
 COPY index.html ./
 COPY eslint.config.js ./
 
+# Copiar el archivo .env (o crear uno predeterminado si no existe)
+COPY .env* ./
+# En caso de que .env no exista, creamos uno predeterminado
+RUN if [ ! -f .env ]; then echo "VITE_API_URL=http://localhost:3000" > .env; fi
+
 # Instalar dependencias
 RUN npm ci
 
@@ -25,8 +30,8 @@ FROM nginx:alpine
 # Copiar la aplicación construida
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Copiar la configuración de nginx personalizada si es necesaria
-# COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copiar la configuración de nginx personalizada
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Exponer el puerto
 EXPOSE 80

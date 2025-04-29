@@ -15,12 +15,12 @@ interface WelcomeScreenProps {
 }
 
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
-  onCreateNew,
-  onCreateNewMockup,
-  onOpenExisting,
+  // onCreateNew,
+  // onCreateNewMockup,
+  // onOpenExisting,
   onFileImport,
-  onLogout,
-  onShowTodoApp
+  // onLogout,
+  // onShowTodoApp
 }) => {
   const navigate = useNavigate();
   const [recentDiagrams, setRecentDiagrams] = useState<Diagrama[]>([]);

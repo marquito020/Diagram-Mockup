@@ -2,8 +2,9 @@ node_modules
 .git
 .github
 .gitignore
-.env
-.env.*
+# Permitimos copiar los archivos .env al contenedor
+# .env
+# .env.*
 *.log
 dist
 .DS_Store

@@ -1,4 +1,4 @@
-import { ClassInfo, ClassAttribute } from "../types/diagram";
+import { ClassInfo } from "../types/diagram";
 import { createEmptyMockup } from "./mockupUtils";
 
 /**
@@ -366,28 +366,28 @@ const createTableForClass = (classInfo: ClassInfo, index: number, allClasses: Cl
 /**
  * Determina el tipo de campo apropiado basado en el atributo
  */
-const getFieldTypeFromAttribute = (attr: ClassAttribute): string => {
-  const typeLower = attr.type.toLowerCase();
+// const getFieldTypeFromAttribute = (attr: ClassAttribute): string => {
+//   const typeLower = attr.type.toLowerCase();
 
-  if (typeLower.includes("date") || typeLower.includes("time")) {
-    return "date";
-  } else if (
-    typeLower.includes("number") ||
-    typeLower === "int" ||
-    typeLower === "integer" ||
-    typeLower === "float" ||
-    typeLower === "double"
-  ) {
-    return "number";
-  } else if (typeLower.includes("email")) {
-    return "email";
-  } else if (typeLower.includes("password")) {
-    return "password";
-  } else if (typeLower.includes("phone") || typeLower.includes("tel")) {
-    return "tel";
-  } else if (typeLower.includes("bool")) {
-    return "checkbox";
-  } else {
-    return "text";
-  }
-};
+//   if (typeLower.includes("date") || typeLower.includes("time")) {
+//     return "date";
+//   } else if (
+//     typeLower.includes("number") ||
+//     typeLower === "int" ||
+//     typeLower === "integer" ||
+//     typeLower === "float" ||
+//     typeLower === "double"
+//   ) {
+//     return "number";
+//   } else if (typeLower.includes("email")) {
+//     return "email";
+//   } else if (typeLower.includes("password")) {
+//     return "password";
+//   } else if (typeLower.includes("phone") || typeLower.includes("tel")) {
+//     return "tel";
+//   } else if (typeLower.includes("bool")) {
+//     return "checkbox";
+//   } else {
+//     return "text";
+//   }
+// };

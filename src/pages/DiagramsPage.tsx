@@ -54,7 +54,7 @@ export const DiagramsPage = () => {
     handleToggleFileSelector,
     handleFileSelect,
     handleExtractClasses,
-    handleFileImport,
+    // handleFileImport,
     handleSaveAsConfirm,
     handleDownload,
     handleAutoSave,

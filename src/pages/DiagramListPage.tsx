@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { File, Edit2, Trash2, Flag, AlertCircle, AlertTriangle, Search, Clock } from 'lucide-react';
+import { File, Edit2, Trash2, AlertCircle, Search, Clock } from 'lucide-react';
 
 // Servicios API
 import { authApi, diagramasApi, mockupsApi } from '../services/apiService';

@@ -8,7 +8,20 @@ import {
 } from "../types/api";
 
 // Base API URL
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+// Asegurarse de que la variable de entorno se capture correctamente
+const getApiUrl = () => {
+  // Para entornos de desarrollo y producción con Vite
+  if (import.meta.env.VITE_API_URL) {
+    console.log('Usando URL de API desde variable de entorno:', import.meta.env.VITE_API_URL);
+    return import.meta.env.VITE_API_URL;
+  }
+  
+  // Valor por defecto
+  console.log('Usando URL de API predeterminada: http://localhost:3000');
+  return "http://localhost:3000";
+};
+
+const API_URL = getApiUrl();
 
 // Create axios instance with base URL
 const api = axios.create({
