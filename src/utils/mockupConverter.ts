@@ -163,7 +163,7 @@ const generateMockupXml = (classes: ClassInfo[]): string => {
     
     classes.forEach((classInfo, index) => {
       try {
-        allTablesHtml += createTableForClass(classInfo, index);
+        allTablesHtml += createTableForClass(classInfo, index, classes);
       } catch (error) {
         console.error(`Error al crear tabla para la clase ${classInfo.name}:`, error);
         // Continuar con la siguiente clase si hay error
@@ -200,33 +200,33 @@ const generateMockupXml = (classes: ClassInfo[]): string => {
 /**
  * Crea una tabla para una clase específica dentro de una ventana de navegador web con sidebar
  */
-const createTableForClass = (classInfo: ClassInfo, index: number): string => {
+const createTableForClass = (classInfo: ClassInfo, index: number, allClasses: ClassInfo[] = []): string => {
   const yOffset = index * 650 + 50; // Mayor espaciado vertical entre ventanas
   const windowWidth = 800;
   const windowHeight = 500;
   const sidebarWidth = 150;
   const contentWidth = windowWidth - sidebarWidth - 20; // 20 de margen
   
-  // Crear una ventana de navegador web simplificada
+  // Crear una ventana de navegador web simplificada usando el formato correcto
   let tableHtml = `
     <!-- Ventana de navegador para ${classInfo.name} -->
-    <mxCell id="browser-${index}" value="" style="shape=mxgraph.mockup.containers.browserWindow;html=1;" parent="1" vertex="1">
+    <mxCell id="browser-${index}" value="" style="strokeWidth=1;shadow=0;dashed=0;align=center;shape=mxgraph.mockup.containers.browserWindow;rSize=0;strokeColor=#666666;strokeColor2=#008cff;strokeColor3=#c4c4c4;mainText=,;recursiveResize=0;" parent="1" vertex="1">
       <mxGeometry x="50" y="${yOffset}" width="${windowWidth}" height="${windowHeight}" as="geometry"/>
     </mxCell>
     
-    <!-- Título de la ventana del navegador -->
-    <mxCell id="browser-${index}-title" value="${classInfo.name}" style="text;html=1;" parent="browser-${index}" vertex="1">
-      <mxGeometry x="40" y="10" width="${windowWidth-80}" height="20" as="geometry"/>
+    <!-- Título de la ventana del navegador (corregido) -->
+    <mxCell id="browser-${index}-title" value="${classInfo.name}" style="strokeWidth=1;shadow=0;dashed=0;align=center;shape=mxgraph.mockup.containers.anchor;fontSize=17;fontColor=#666666;align=left;" parent="browser-${index}" vertex="1">
+      <mxGeometry x="60" y="12" width="110" height="26" as="geometry"/>
     </mxCell>
     
-    <!-- URL del navegador -->
-    <mxCell id="browser-${index}-url" value="https://example.com/${classInfo.name.toLowerCase()}" style="text;html=1;" parent="browser-${index}" vertex="1">
-      <mxGeometry x="10" y="30" width="${windowWidth-20}" height="20" as="geometry"/>
+    <!-- URL del navegador (corregido) -->
+    <mxCell id="browser-${index}-url" value="https://www.${classInfo.name.toLowerCase()}.io" style="strokeWidth=1;shadow=0;dashed=0;align=center;shape=mxgraph.mockup.containers.anchor;rSize=0;fontSize=17;fontColor=#666666;align=left;" parent="browser-${index}" vertex="1">
+      <mxGeometry x="130" y="60" width="250" height="26" as="geometry"/>
     </mxCell>
     
     <!-- Sidebar -->
     <mxCell id="sidebar-${index}" value="" style="shape=mxgraph.mockup.containers.marginRect;html=1;" parent="browser-${index}" vertex="1">
-      <mxGeometry x="10" y="70" width="${sidebarWidth}" height="${windowHeight-80}" as="geometry"/>
+      <mxGeometry x="10" y="110" width="${sidebarWidth}" height="${windowHeight-120}" as="geometry"/>
     </mxCell>
     
     <!-- Título del sidebar -->
@@ -234,12 +234,13 @@ const createTableForClass = (classInfo: ClassInfo, index: number): string => {
       <mxGeometry x="10" y="10" width="${sidebarWidth-20}" height="30" as="geometry"/>
     </mxCell>`;
 
-  // Añadir enlaces a todas las clases en el sidebar
-  for (let i = 0; i < Math.min(5, index + 1); i++) {
+  // Añadir enlaces a todas las clases en el sidebar usando nombres reales de clases
+  for (let i = 0; i < Math.min(5, allClasses.length); i++) {
+    const className = allClasses[i]?.name || `Clase ${i+1}`;
     tableHtml += `
     
     <!-- Enlace clase ${i} -->
-    <mxCell id="sidebar-link-${index}-${i}" value="Clase ${i+1}" style="text;html=1;" parent="sidebar-${index}" vertex="1">
+    <mxCell id="sidebar-link-${index}-${i}" value="${className}" style="text;html=1;" parent="sidebar-${index}" vertex="1">
       <mxGeometry x="20" y="${50 + i * 30}" width="${sidebarWidth-40}" height="20" as="geometry"/>
     </mxCell>`;
   }
@@ -249,12 +250,12 @@ const createTableForClass = (classInfo: ClassInfo, index: number): string => {
     
     <!-- Botón Salir -->
     <mxCell id="sidebar-exit-${index}" value="Salir" style="text;html=1;fontStyle=1;align=center;" parent="sidebar-${index}" vertex="1">
-      <mxGeometry x="20" y="${windowHeight-150}" width="${sidebarWidth-40}" height="30" as="geometry"/>
+      <mxGeometry x="20" y="${windowHeight-190}" width="${sidebarWidth-40}" height="30" as="geometry"/>
     </mxCell>
     
     <!-- Contenido principal -->
     <mxCell id="content-${index}" value="" style="shape=mxgraph.mockup.containers.marginRect;html=1;" parent="browser-${index}" vertex="1">
-      <mxGeometry x="${sidebarWidth+10}" y="70" width="${contentWidth}" height="${windowHeight-80}" as="geometry"/>
+      <mxGeometry x="${sidebarWidth+10}" y="110" width="${contentWidth}" height="${windowHeight-120}" as="geometry"/>
     </mxCell>
     
     <!-- Título del contenido -->
@@ -262,14 +263,17 @@ const createTableForClass = (classInfo: ClassInfo, index: number): string => {
       <mxGeometry x="10" y="10" width="${contentWidth-20}" height="30" as="geometry"/>
     </mxCell>
     
-    <!-- Botón Crear -->
-    <mxCell id="content-create-${index}" value="+ Crear" style="shape=mxgraph.mockup.buttons.button;html=1;" parent="content-${index}" vertex="1">
+    <!-- Botón Crear corregido -->
+    <mxCell id="content-create-button-${index}" parent="content-${index}" vertex="1">
       <mxGeometry x="10" y="50" width="80" height="30" as="geometry"/>
+    </mxCell>
+    <mxCell id="content-create-text-${index}" value="+ Crear" style="text;html=1;align=center;fontStyle=1;" parent="content-create-button-${index}" vertex="1">
+      <mxGeometry width="80" height="30" as="geometry"/>
     </mxCell>
     
     <!-- Tabla de datos -->
     <mxCell id="data-container-${index}" value="" style="shape=mxgraph.mockup.containers.marginRect;html=1;" parent="content-${index}" vertex="1">
-      <mxGeometry x="10" y="90" width="${contentWidth-20}" height="${windowHeight-200}" as="geometry"/>
+      <mxGeometry x="10" y="90" width="${contentWidth-20}" height="${windowHeight-240}" as="geometry"/>
     </mxCell>`;
   
   // Añadir encabezados de tabla
@@ -345,12 +349,15 @@ const createTableForClass = (classInfo: ClassInfo, index: number): string => {
     </mxCell>`;
   }
   
-  // Botón guardar
+  // Botón guardar corregido
   tableHtml += `
     
-    <!-- Botón Guardar -->
-    <mxCell id="save-button-${index}" value="Guardar" style="shape=mxgraph.mockup.buttons.button;html=1;" parent="content-${index}" vertex="1">
+    <!-- Botón Guardar corregido -->
+    <mxCell id="save-button-container-${index}" parent="content-${index}" vertex="1">
       <mxGeometry x="${(contentWidth-20)/2 - 50}" y="${windowHeight-170}" width="100" height="30" as="geometry"/>
+    </mxCell>
+    <mxCell id="save-button-text-${index}" value="Guardar" style="text;html=1;align=center;fontStyle=1;" parent="save-button-container-${index}" vertex="1">
+      <mxGeometry width="100" height="30" as="geometry"/>
     </mxCell>`;
   
   return tableHtml;
